@@ -1,0 +1,692 @@
+import openmdao.api as om
+import dymos as dm
+import numpy as np
+import random 
+
+class DroneODE(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare('num_nodes', types=int)
+        self.options.declare('avoid_points', types=list)
+        self.options.declare('penalty_strength', types=float, default=100.0)
+        self.options.declare('penalty_radius', types=float, default=3.0)
+        self.options.declare('max_height', types=float, default=20.0)
+    
+    def setup(self):
+        nn = self.options['num_nodes']
+        
+        # Inputs - States
+        self.add_input('x', shape=(nn,), units='m')
+        self.add_input('y', shape=(nn,), units='m')
+        self.add_input('z', shape=(nn,), units='m')
+        self.add_input('vx', shape=(nn,), units='m/s')
+        self.add_input('vy', shape=(nn,), units='m/s')
+        self.add_input('vz', shape=(nn,), units='m/s')
+        
+        # Inputs - Controls
+        self.add_input('ax', shape=(nn,), units='m/s**2')
+        self.add_input('ay', shape=(nn,), units='m/s**2')
+        self.add_input('az', shape=(nn,), units='m/s**2')
+        
+        # Outputs - State rates
+        self.add_output('x_dot', shape=(nn,), units='m/s')
+        self.add_output('y_dot', shape=(nn,), units='m/s')
+        self.add_output('z_dot', shape=(nn,), units='m/s')
+        self.add_output('vx_dot', shape=(nn,), units='m/s**2')
+        self.add_output('vy_dot', shape=(nn,), units='m/s**2')
+        self.add_output('vz_dot', shape=(nn,), units='m/s**2')
+        
+        # Outputs - Constraints
+        self.add_output('v_squared', shape=(nn,), units='m**2/s**2')
+        self.add_output('obstacle_penalty', shape=(nn,), units=None)  # Fixed units
+        
+        n_avoid = len(self.options['avoid_points'])
+        self.add_output('dist_to_avoid', shape=(nn, n_avoid), units='m')
+
+    def setup_partials(self):  # ← INDENTED (inside class)
+        """Declare partial derivatives (Jacobian structure)"""
+        nn = self.options['num_nodes']
+        n_avoid = len(self.options['avoid_points'])
+        
+        # Create index arrays for diagonal Jacobians
+        ar = np.arange(nn)
+        
+        # Partials for simple ODEs (constant = 1.0)
+        self.declare_partials('x_dot', 'vx', rows=ar, cols=ar, val=1.0)
+        self.declare_partials('y_dot', 'vy', rows=ar, cols=ar, val=1.0)
+        self.declare_partials('z_dot', 'vz', rows=ar, cols=ar, val=1.0)
+        self.declare_partials('vx_dot', 'ax', rows=ar, cols=ar, val=1.0)
+        self.declare_partials('vy_dot', 'ay', rows=ar, cols=ar, val=1.0)
+        self.declare_partials('vz_dot', 'az', rows=ar, cols=ar, val=1.0)
+        
+        # Partials for v_squared = vx^2 + vy^2 + vz^2
+        self.declare_partials('v_squared', 'vx', rows=ar, cols=ar)
+        self.declare_partials('v_squared', 'vy', rows=ar, cols=ar)
+        self.declare_partials('v_squared', 'vz', rows=ar, cols=ar)
+        
+        # Partials for dist_to_avoid (2D output)
+        all_rows = []
+        all_cols = []
+        
+        for i in range(n_avoid):
+            rows_i = np.arange(nn) * n_avoid + i
+            cols_i = np.arange(nn)
+            all_rows.append(rows_i)
+            all_cols.append(cols_i)
+        
+        all_rows = np.concatenate(all_rows)
+        all_cols = np.concatenate(all_cols)
+        
+        self.declare_partials('dist_to_avoid', 'x', rows=all_rows, cols=all_cols)
+        self.declare_partials('dist_to_avoid', 'y', rows=all_rows, cols=all_cols)
+        self.declare_partials('dist_to_avoid', 'z', rows=all_rows, cols=all_cols)
+        
+        # Partials for obstacle_penalty
+        self.declare_partials('obstacle_penalty', 'x', rows=ar, cols=ar)
+        self.declare_partials('obstacle_penalty', 'y', rows=ar, cols=ar)
+        self.declare_partials('obstacle_penalty', 'z', rows=ar, cols=ar)
+        self.declare_partials('obstacle_penalty', 'ax', rows=ar, cols=ar)
+        self.declare_partials('obstacle_penalty', 'ay', rows=ar, cols=ar)
+        self.declare_partials('obstacle_penalty', 'az', rows=ar, cols=ar)
+    
+    def compute(self, inputs, outputs):  # ← INDENTED (inside class)
+        """Compute outputs from inputs"""
+        
+        # State derivatives (ODEs)
+        outputs['x_dot'] = inputs['vx']
+        outputs['y_dot'] = inputs['vy']
+        outputs['z_dot'] = inputs['vz']
+        outputs['vx_dot'] = inputs['ax']
+        outputs['vy_dot'] = inputs['ay']
+        outputs['vz_dot'] = inputs['az']
+        
+        # Velocity squared
+        outputs['v_squared'] = (inputs['vx']**2 + 
+                               inputs['vy']**2 + 
+                               inputs['vz']**2)
+        
+        # Distance to obstacles and penalty
+        avoid_points = self.options['avoid_points']
+        penalty_strength = self.options['penalty_strength']
+        penalty_radius = self.options['penalty_radius']
+        
+        total_penalty = np.zeros(self.options['num_nodes'])
+        
+        for i, (ox, oy, oz) in enumerate(avoid_points):
+            dx = inputs['x'] - ox
+            dy = inputs['y'] - oy
+            dz = inputs['z'] - oz
+            dist = np.sqrt(dx**2 + dy**2 + dz**2)
+            dist2 = dx**2 + dy**2 + dz**2
+            
+            outputs['dist_to_avoid'][:, i] = dist
+            
+            # Penalty function
+            acc_x = inputs['ax']
+            acc_y = inputs['ay']
+            acc_z = inputs['az']
+            # penalty = penalty_strength * np.exp(-dist / penalty_radius)
+            penalty = penalty_strength * (1. + 0.001*(acc_x**2 + acc_y**2 + acc_z**2)) / dist2 
+            total_penalty += penalty
+        
+        outputs['obstacle_penalty'] = total_penalty
+
+        # --- Altitude Penalty Logic ---
+        z = inputs['z']
+        max_h = self.options['max_height']
+        
+        # Calculate height violation: max(0, z - max_h)
+        # Using np.maximum for element-wise comparison
+        height_violation = z - max_h
+        
+        # Proportional to the square of the difference
+        # You may want a scaling factor (e.g., 10.0) to balance it with obstacles
+        h_penalty_weight = 5.e-2
+        h_ref = 5.0 
+        altitude_penalty = h_penalty_weight * np.exp(height_violation/h_ref) 
+        
+        # Add this to the existing total_penalty from obstacles
+        # total_penalty was calculated in your loop over avoid_points
+        outputs['obstacle_penalty'] = total_penalty + altitude_penalty
+
+
+    def compute_partials(self, inputs, partials):  # ← INDENTED (inside class)
+        """Compute partial derivatives (Jacobians)"""
+        
+        # Partials for v_squared = vx^2 + vy^2 + vz^2
+        partials['v_squared', 'vx'] = 2.0 * inputs['vx']
+        partials['v_squared', 'vy'] = 2.0 * inputs['vy']
+        partials['v_squared', 'vz'] = 2.0 * inputs['vz']
+        
+        # Partials for dist_to_avoid and obstacle_penalty
+        avoid_points = self.options['avoid_points']
+        penalty_strength = self.options['penalty_strength']
+        penalty_radius = self.options['penalty_radius']
+        nn = self.options['num_nodes']
+        n_avoid = len(avoid_points)
+        
+        # Initialize arrays for flattened dist_to_avoid partials
+        ddist_dx_flat = np.zeros(nn * n_avoid)
+        ddist_dy_flat = np.zeros(nn * n_avoid)
+        ddist_dz_flat = np.zeros(nn * n_avoid)
+        
+        # Initialize penalty gradients
+        dpenalty_dx = np.zeros(nn)
+        dpenalty_dy = np.zeros(nn)
+        dpenalty_dz = np.zeros(nn)
+        dpenalty_dax = np.zeros(nn)
+        dpenalty_day = np.zeros(nn)
+        dpenalty_daz = np.zeros(nn)
+        
+        for i, (ox, oy, oz) in enumerate(avoid_points):
+            dx = inputs['x'] - ox
+            dy = inputs['y'] - oy
+            dz = inputs['z'] - oz
+            dist = np.sqrt(dx**2 + dy**2 + dz**2)
+            dist2 = dx**2 + dy**2 + dz**2
+            
+            # Avoid division by zero
+            # dist2_safe = np.maximum(dist2, 1e-10)
+            
+            # ∂dist/∂x = dx/dist, etc.
+            # ddist_dx = dx / dist2_safe
+            # ddist_dy = dy / dist2_safe
+            # ddist_dz = dz / dist2_safe
+            ddist_dx = 2*dx 
+            ddist_dy = 2*dy 
+            ddist_dz = 2*dz 
+            
+            # Store in flattened array
+            flat_indices = np.arange(nn) * n_avoid + i
+            ddist_dx_flat[flat_indices] = ddist_dx
+            ddist_dy_flat[flat_indices] = ddist_dy
+            ddist_dz_flat[flat_indices] = ddist_dz
+            
+            # Penalty derivatives
+            acc_x = inputs['ax']
+            acc_y = inputs['ay']
+            acc_z = inputs['az']
+            # penalty_exp = penalty_strength * np.exp(-dist / penalty_radius)
+            # penalty = penalty_strength / dist2 
+            penalty = penalty_strength * (1. + 0.001*(acc_x**2 + acc_y**2 + acc_z**2)) / dist2 
+            # factor = -penalty_exp / penalty_radius
+            factor = -penalty / dist2**2 
+            
+            dpenalty_dx += factor * ddist_dx
+            dpenalty_dy += factor * ddist_dy
+            dpenalty_dz += factor * ddist_dz
+            
+            dpenalty_dax += penalty_strength * 0.001 * 2 * acc_x /dist2 
+            dpenalty_day += penalty_strength * 0.001 * 2 * acc_y /dist2
+            dpenalty_daz += penalty_strength * 0.001 * 2 * acc_z /dist2
+        
+        # Assign flattened partials
+        partials['dist_to_avoid', 'x'] = ddist_dx_flat
+        partials['dist_to_avoid', 'y'] = ddist_dy_flat
+        partials['dist_to_avoid', 'z'] = ddist_dz_flat
+        
+        partials['obstacle_penalty', 'x'] = dpenalty_dx
+        partials['obstacle_penalty', 'y'] = dpenalty_dy
+
+        # --- Altitude Penalty Partials ---
+        z = inputs['z']
+        max_h = self.options['max_height']
+        height_violation = z - max_h
+        h_penalty_weight = 5.e-2
+        h_ref = 5.0 
+        
+        # Derivative is 0 if below max_h, else 2 * weight * (z - max_h)
+        d_alt_dz = h_penalty_weight / h_ref * np.exp(height_violation/h_ref)     
+        
+        # Add this to the existing obstacle penalty gradient for z
+        # dpenalty_dz was calculated in your loop over avoid_points
+        partials['obstacle_penalty', 'z'] = dpenalty_dz + d_alt_dz
+        # partials['obstacle_penalty', 'z'] = dpenalty_dz
+        
+        partials['obstacle_penalty', 'ax'] = dpenalty_dax 
+        partials['obstacle_penalty', 'ay'] = dpenalty_day 
+        partials['obstacle_penalty', 'az'] = dpenalty_daz 
+
+def generate_clustered_points(n_clusters, n_per_cluster, 
+                              x_range=(0, 50), y_range=(0, 50), z_range=(0,20),  
+                              cluster_size=(5, 5)):
+    """
+    Generates n_clusters, each containing n_per_cluster points 
+    distributed within a rectangle (cluster_size) on the x-y plane.
+    """
+    points = []
+    dx, dy = cluster_size # Dimensions of the cluster rectangle
+
+    for _ in range(n_clusters):
+        # 1. Pick a random 'Anchor' or Center for this cluster
+        # We subtract dx/2 to ensure the cluster stays mostly within range
+        x_margin = dx # + 0.1*np.abs(x_range[1] - x_range[0])
+        y_margin = dy # + 0.1*np.abs(y_range[1] - y_range[0])
+        cx = random.uniform(x_range[0] + x_margin, x_range[1] - x_margin)
+        cy = random.uniform(y_range[0] + y_margin, y_range[1] - y_margin)
+        cz = random.uniform(z_range[0], z_range[1])
+
+        for _ in range(n_per_cluster // 2):
+            # 2. Generate point within the rectangle [cx-dx/2, cx+dx/2]
+            x = round(cx + random.uniform(-dx/2, dx/2), 2)
+            y = round(cy + random.uniform(-dy/2, dy/2), 2)
+            z = cz # 0.0 # Keeping it 2D on the x-y plane as requested
+            
+            points.append((x, y, z))
+            
+        for _ in range(n_per_cluster // 2):
+            # 2. Generate point within the rectangle [cx-dx/2, cx+dx/2]
+            x = round(cx + random.uniform(-dx/2, dx/2), 2)
+            y = round(cy + random.uniform(-dy/2, dy/2), 2)
+            z = 0.0 # Keeping it 2D on the x-y plane as requested
+            
+            points.append((x, y, z))
+            
+    return points
+
+def generate_random_points(n, x_range=(0, 50), y_range=(0, 50), z_range=(0, 0)):
+    """
+    Generates a list of N random (x, y, z) tuples.
+    """
+    points = []
+    for _ in range(n):
+        x = round(random.uniform(*x_range), 2)
+        y = round(random.uniform(*y_range), 2)
+        z = round(random.uniform(*z_range), 2)
+        points.append((x, y, z))
+    return points
+
+def generate_grid_points(rows, cols, spacing=10, z=0):
+    """
+    Generates a list of points in a structured grid pattern.
+    """
+    points = []
+    for r in range(rows):
+        for c in range(cols):
+            points.append((float(c * spacing), float(r * spacing), float(z)))
+    return points
+
+def generate_numpy_array(n):
+    """
+    Generates points using NumPy (faster for very large datasets).
+    Then converts to a list of tuples.
+    """
+    # Create an Nx3 array
+    coords = np.zeros((n, 3))
+    coords[:, 0] = np.random.uniform(0, 50, n) # X
+    coords[:, 1] = np.random.uniform(0, 50, n) # Y
+    coords[:, 2] = 0                           # Z
+    
+    # Convert to list of tuples to match your requested format
+    return [tuple(row) for row in coords]
+
+# n_points = 10 
+
+# Create problem
+p = om.Problem()
+p.driver = om.pyOptSparseDriver()
+p.driver.options['optimizer'] = 'IPOPT'
+p.driver.opt_settings['max_iter'] = 600
+p.driver.opt_settings['print_level'] = 5
+
+traj = dm.Trajectory()
+p.model.add_subsystem('traj', traj)
+
+# Define obstacles
+# avoid_points = [(10, 10, 4), (20, 15, 8), (30, 5, 0), (48,48,19.2) ]
+# avoid_points = [(10, 10, 0), (20, 15, 0), (30, 5, 0), (48,48,0) ]
+
+# avoid_points = generate_random_points(n_points)
+
+n_clusters = 7
+n_points_per_cluster = 32
+n_points = n_clusters * n_points_per_cluster 
+
+avoid_points = generate_clustered_points(n_clusters,n_points_per_cluster,
+    x_range=(0, 500),y_range=(0, 500),
+    cluster_size=(75,75)
+)
+
+print("Random Points:")
+print(avoid_points)
+
+# Create phase with penalty parameters
+phase = dm.Phase(
+    ode_class=DroneODE,
+    ode_init_kwargs={
+        'avoid_points': avoid_points,
+        'penalty_strength': 100.0,  # Tune this: higher = stronger avoidance
+        'penalty_radius': 5.0,       # Tune this: smaller = sharper penalty
+        'max_height': 50.0
+    },
+    transcription=dm.GaussLobatto(num_segments=20, order=3)
+)
+traj.add_phase('phase0', phase)
+
+phase.set_time_options(fix_initial=True, fix_duration=False, 
+                       duration_bounds=(8.0, 100.0))
+
+# States with scaling
+phase.add_state('x', fix_initial=True, fix_final=True, 
+                rate_source='x_dot', units='m',
+                ref=50.0, defect_ref=10.0)
+
+phase.add_state('y', fix_initial=True, fix_final=True,
+                rate_source='y_dot', units='m',
+                ref=50.0, defect_ref=10.0)
+
+phase.add_state('z', fix_initial=True, fix_final=True,
+                rate_source='z_dot', units='m',
+                lower = 0, 
+                ref=20.0, defect_ref=5.0)
+
+phase.add_state('vx', fix_initial=True, fix_final=False,
+                rate_source='vx_dot', units='m/s',
+                lower=-15, upper=15, ref=3.0, defect_ref=1.0)
+
+phase.add_state('vy', fix_initial=True, fix_final=False,
+                rate_source='vy_dot', units='m/s',
+                lower=-15, upper=15, ref=3.0, defect_ref=1.0)
+
+phase.add_state('vz', fix_initial=False, fix_final=False,
+                rate_source='vz_dot', units='m/s',
+                lower=-15, upper=15, ref=2.0, defect_ref=1.0)
+# Controls
+phase.add_control('ax', lower=-7.5, upper=7.5, units='m/s**2', ref=3.0)
+phase.add_control('ay', lower=-7.5, upper=7.5, units='m/s**2', ref=3.0)
+phase.add_control('az', lower=-7.5, upper=7.5, units='m/s**2', ref=3.0)
+
+# Add timeseries output to integrate penalty over trajectory
+phase.add_timeseries_output('obstacle_penalty')
+
+
+# OPTION A: Minimize weighted combination of time + penalty
+# This requires creating a combined objective
+
+
+# To add penalty to objective, we need to integrate it over time
+# Add this component to the trajectory level:
+
+class PenaltyIntegrator(om.ExplicitComponent):
+    """Integrate penalty over the trajectory"""
+    def setup(self):
+        self.add_input('time', shape_by_conn=True, units='s')
+        self.add_input('penalty', shape_by_conn=True)
+        self.add_output('total_penalty', units='s')  # Integral of penalty over time
+    
+    def compute(self, inputs, outputs):
+        # Trapezoidal integration
+        time = inputs['time'].flatten()
+        penalty = inputs['penalty'].flatten()
+        outputs['total_penalty'] = np.trapezoid(penalty, time)
+
+# Add integrator
+p.model.add_subsystem('penalty_integrator', PenaltyIntegrator())
+p.model.connect('traj.phase0.timeseries.time', 'penalty_integrator.time')
+p.model.connect('traj.phase0.timeseries.obstacle_penalty', 'penalty_integrator.penalty')
+
+# First, add state to integrate penalty over time
+phase.add_state('penalty_integral', 
+                rate_source='obstacle_penalty',
+                fix_initial=True,
+                fix_final=False,
+                units=None,
+                ref=1000.0)
+
+# Create combined objective component
+class CombinedObjective(om.ExplicitComponent):
+    def setup(self):
+        self.add_input('time_final', units='s')
+        self.add_input('penalty_final', units=None)
+        self.add_output('J', units='s')
+        self.declare_partials('*', '*')
+    
+    def compute(self, inputs, outputs):
+        # Minimize time + weighted penalty
+        # penalty_weight = 0.5  # Tune this!
+        penalty_weight = 10.0 # 1.5  # Tune this!
+        outputs['J'] = inputs['time_final'] + penalty_weight * inputs['penalty_final']
+    
+    def compute_partials(self, inputs, partials):
+        partials['J', 'time_final'] = 1.0
+        # partials['J', 'penalty_final'] = 0.5
+        partials['J', 'penalty_final'] = 10.0 #1.5
+
+# Add the component after creating the problem
+p.model.add_subsystem('combined_obj', CombinedObjective())
+
+# After p.setup(), connect the values
+p.model.connect('traj.phase0.timeseries.time', 
+                'combined_obj.time_final', src_indices=[-1])
+p.model.connect('traj.phase0.timeseries.penalty_integral', 
+                'combined_obj.penalty_final', src_indices=[-1])
+
+# Minimize combined objective
+p.model.add_objective('combined_obj.J')
+
+# Setup
+p.setup()
+
+# Don't forget to initialize penalty integral to zero
+# Initial values
+p.set_val('traj.phase0.states:penalty_integral', 0.0)
+
+
+
+
+
+
+
+
+p.set_val('traj.phase0.t_initial', 0.0)
+# p.set_val('traj.phase0.t_duration', 25.0)
+
+p.set_val('traj.phase0.states:x', phase.interp('x', [0, 500]))
+p.set_val('traj.phase0.states:y', phase.interp('y', [0, 480]))
+p.set_val('traj.phase0.states:z', phase.interp('z', [0, 10]))
+
+p.set_val('traj.phase0.states:vx', phase.interp('vx', [5, 2]))
+p.set_val('traj.phase0.states:vy', phase.interp('vy', [5, 2]))
+p.set_val('traj.phase0.states:vz', phase.interp('vz', [0.4, 0.4]))
+
+# Run
+p.run_driver()
+
+# Check results
+print(f"\\nOptimal time: {p.get_val('traj.phase0.timeseries.time')[-1].item():.2f} s")
+print(f"Total penalty accumulated: {p.get_val('penalty_integrator.total_penalty').item():.2f}")
+
+
+
+# Access solution directly (no database needed)
+import matplotlib.pyplot as plt
+
+# Get the simulation results
+sim_out = traj.simulate()
+
+# Get time values
+t = p.get_val('traj.phase0.timeseries.time')
+
+# Get obstacle penalty
+penalty = p.get_val('traj.phase0.timeseries.obstacle_penalty')
+
+# Get states
+x = p.get_val('traj.phase0.timeseries.x')
+y = p.get_val('traj.phase0.timeseries.y')
+z = p.get_val('traj.phase0.timeseries.z')
+
+# Get velocities
+vx = p.get_val('traj.phase0.timeseries.vx')
+vy = p.get_val('traj.phase0.timeseries.vy')
+vz = p.get_val('traj.phase0.timeseries.vz')
+
+# Get controls (accelerations)
+# Get controls from phase (NOT from timeseries)
+ax = p.get_val('traj.phase0.control_values:ax')
+ay = p.get_val('traj.phase0.control_values:ay')
+az = p.get_val('traj.phase0.control_values:az')
+
+# Compute magnitudes
+v_mag = np.sqrt(vx**2 + vy**2 + vz**2)
+a_mag = np.sqrt(ax**2 + ay**2 + az**2)
+
+
+
+# Create figure with subplots
+fig, axes = plt.subplots(1, 2, figsize=(14, 10))
+
+# 1. 3D Trajectory
+from mpl_toolkits.mplot3d import Axes3D
+ax1 = plt.subplot(1, 2, 1, projection='3d')
+ax1.plot(x, y, z, 'b-', linewidth=2, label='Trajectory')
+ax1.scatter(x[0], y[0], z[0], c='green', s=100, marker='o', label='Start')
+ax1.scatter(x[-1], y[-1], z[-1], c='blue', s=100, marker='s', label='End')
+
+# Plot obstacle(s)
+for obs_x, obs_y, obs_z in avoid_points:
+    u = np.linspace(0, 2 * np.pi, 20)
+    v = np.linspace(0, np.pi, 20)
+    obs_radius = 1.0  # Visualization radius
+    ox = obs_x + obs_radius * np.outer(np.cos(u), np.sin(v))
+    oy = obs_y + obs_radius * np.outer(np.sin(u), np.sin(v))
+    oz = obs_z + 0.1* obs_radius * np.outer(np.ones(np.size(u)), np.cos(v))
+    #ax1.plot_surface(ox, oy, oz, color='red', alpha=0.3)
+    ax1.plot(obs_x,obs_y,obs_z,'ko') 
+
+ax1.set_xlabel('X (m)')
+ax1.set_ylabel('Y (m)')
+ax1.set_zlabel('Z (m)')
+ax1.legend()
+ax1.set_title('3D Trajectory')
+
+ax2 = plt.subplot(1, 2, 2)
+ax2.plot(t, penalty, 'r-', linewidth=2, label='Obstacle Penalty')
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('Penalty (dimensionless)')
+ax2.set_title('Obstacle Avoidance Penalty Over Time')
+ax2.grid(True, alpha=0.3)
+ax2.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Create figure with subplots
+fig, axes = plt.subplots(3, 2, figsize=(14, 10))
+
+# 1. 3D Trajectory
+from mpl_toolkits.mplot3d import Axes3D
+ax1 = plt.subplot(3, 2, 1, projection='3d')
+ax1.plot(x, y, z, 'b-', linewidth=2, label='Trajectory')
+ax1.scatter(x[0], y[0], z[0], c='green', s=100, marker='o', label='Start')
+ax1.scatter(x[-1], y[-1], z[-1], c='blue', s=100, marker='s', label='End')
+
+# Plot obstacle(s)
+for obs_x, obs_y, obs_z in avoid_points:
+    u = np.linspace(0, 2 * np.pi, 20)
+    v = np.linspace(0, np.pi, 20)
+    obs_radius = 4.0  # Visualization radius
+    ox = obs_x + obs_radius * np.outer(np.cos(u), np.sin(v))
+    oy = obs_y + obs_radius * np.outer(np.sin(u), np.sin(v))
+    oz = obs_z + obs_radius * np.outer(np.ones(np.size(u)), np.cos(v))
+    # ax1.plot_surface(ox, oy, oz, color='red', alpha=0.3)
+    ax1.plot(obs_x,obs_y,obs_z,'o') 
+
+ax1.set_xlabel('X (m)')
+ax1.set_ylabel('Y (m)')
+ax1.set_zlabel('Z (m)')
+ax1.legend()
+ax1.set_title('3D Trajectory')
+
+# 2. Velocity Magnitude
+ax2 = plt.subplot(3, 2, 2)
+ax2.plot(t, v_mag, 'b-', linewidth=2, label='Velocity magnitude')
+ax2.axhline(y=5.0, color='r', linestyle='--', linewidth=1, label='Max velocity (5 m/s)')
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('Velocity (m/s)')
+ax2.grid(True, alpha=0.3)
+ax2.legend()
+ax2.set_title('Velocity Magnitude')
+
+# 3. Velocity Components
+ax3 = plt.subplot(3, 2, 3)
+ax3.plot(t, vx, 'r-', linewidth=2, label='vx')
+ax3.plot(t, vy, 'g-', linewidth=2, label='vy')
+ax3.plot(t, vz, 'b-', linewidth=2, label='vz')
+ax3.set_xlabel('Time (s)')
+ax3.set_ylabel('Velocity (m/s)')
+ax3.grid(True, alpha=0.3)
+ax3.legend()
+ax3.set_title('Velocity Components')
+
+# 4. Acceleration Magnitude
+ax4 = plt.subplot(3, 2, 4)
+ax4.plot(t, a_mag, 'r-', linewidth=2, label='Acceleration magnitude')
+ax4.axhline(y=3.0, color='k', linestyle='--', linewidth=1, label='Max accel (3 m/s²)')
+ax4.set_xlabel('Time (s)')
+ax4.set_ylabel('Acceleration (m/s²)')
+ax4.grid(True, alpha=0.3)
+ax4.legend()
+ax4.set_title('Acceleration Magnitude (Control)')
+
+# 5. Acceleration Components
+ax5 = plt.subplot(3, 2, 5)
+ax5.plot(t, ax, 'r-', linewidth=2, label='ax')
+ax5.plot(t, ay, 'g-', linewidth=2, label='ay')
+ax5.plot(t, az, 'b-', linewidth=2, label='az')
+ax5.axhline(y=3.0, color='k', linestyle='--', linewidth=1, alpha=0.5)
+ax5.axhline(y=-3.0, color='k', linestyle='--', linewidth=1, alpha=0.5)
+ax5.set_xlabel('Time (s)')
+ax5.set_ylabel('Acceleration (m/s²)')
+ax5.grid(True, alpha=0.3)
+ax5.legend()
+ax5.set_title('Acceleration Components (Controls)')
+
+# 6. Distance to Obstacles
+ax6 = plt.subplot(3, 2, 6)
+# dists = p.get_val('traj.phase0.timeseries.dist_to_avoid')
+# for i in range(dists.shape[1]):  # For each obstacle
+#     ax6.plot(t, dists[:, i], linewidth=2, label=f'Obstacle {i+1}')
+# ax6.axhline(y=4.0, color='r', linestyle='--', linewidth=1, label='Min distance constraint')
+# ax6.set_xlabel('Time (s)')
+# ax6.set_ylabel('Distance (m)')
+# ax6.grid(True, alpha=0.3)
+# ax6.legend()
+# ax6.set_title('Distance to Obstacles')
+
+ax6.plot(t, penalty, 'r-', linewidth=2, label='Obstacle Penalty')
+ax6.set_xlabel('Time (s)')
+ax6.set_ylabel('Penalty (dimensionless)')
+ax6.set_title('Obstacle Avoidance Penalty Over Time')
+ax6.grid(True, alpha=0.3)
+ax6.legend()
+
+plt.tight_layout()
+plt.savefig('drone_trajectory_analysis.png', dpi=150, bbox_inches='tight')
+plt.show()
+
+# Print statistics
+print(f"\\n{'='*60}")
+print(f"TRAJECTORY STATISTICS")
+print(f"{'='*60}")
+print(f"Total time: {t[-1].item():.2f} s")
+print(f"\\nVelocity:")
+print(f"  Mean magnitude: {v_mag.mean():.2f} m/s")
+print(f"  Max magnitude: {v_mag.max():.2f} m/s")
+print(f"  Min magnitude: {v_mag.min():.2f} m/s")
+print(f"\\nAcceleration:")
+print(f"  Mean magnitude: {a_mag.mean():.2f} m/s²")
+print(f"  Max magnitude: {a_mag.max():.2f} m/s²")
+print(f"\\nObstacle avoidance:")
+# print(f"  Minimum distance: {dists.min():.2f} m")
+# print(f"  Constraint satisfied: {'YES ✓' if dists.min() >= 4.0 else 'NO ✗'}")
+print(f"{'='*60}\\n")
+
+
+
+
+# CORRECTED print statements
+#print(f"\\nOptimal flight time: {t[-1].item():.2f} seconds")
+#print(f"Final position: ({x[-1].item():.2f}, {y[-1].item():.2f}, {z[-1].item():.2f})")
+
+
+
+
