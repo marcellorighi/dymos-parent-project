@@ -1,1 +1,5 @@
 Acoustics/
+__pycache__/
+*.pyc
+.DS_Store
+*.npy
