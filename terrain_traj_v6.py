@@ -5,7 +5,8 @@ from scipy.interpolate import RegularGridInterpolator
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def generate_urban_terrain(seed = None, grid_size=150, area_dim=500, num_hills=8, num_clusters = 18, buildings_per_cluster = 14, hill_min_height = 20, hill_max_height=160, hill_min_width = 20., hill_max_width = 360.):
+# def generate_urban_terrain(seed = None, grid_size=150, area_dim=500, num_hills=12, num_clusters = 18, buildings_per_cluster = 14, hill_min_height = 20, hill_max_height=160, hill_min_width = 60., hill_max_width = 360.):
+def generate_urban_terrain(seed = None, grid_size=150, area_dim=500, num_hills=12, num_clusters = 200, buildings_per_cluster = 1, hill_min_height = 20, hill_max_height=160, hill_min_width = 60., hill_max_width = 360.):
     """
     Creates a smooth, continuous terrain with random hills and buildings.
     The output is differentiable (C2), perfect for OpenMDAO/Dymos.
@@ -23,7 +24,7 @@ def generate_urban_terrain(seed = None, grid_size=150, area_dim=500, num_hills=8
 
     # --- Add Rolling Hills (Wide Gaussians) ---
     for _ in range(num_hills):
-        cx, cy = np.random.uniform(-0.5 * area_dim, 0.5 * area_dim, 2)
+        cx, cy = np.random.uniform(-1.2 * area_dim, 1.2 * area_dim, 2)
         height = np.random.uniform(hill_min_height, hill_max_height)  # Moderate height
         width = np.random.uniform(hill_min_width, hill_max_width)   # Wide spread
         # The classic Gaussian "bell curve" formula
@@ -109,6 +110,7 @@ class DroneTerrainODE(om.ExplicitComponent):
         # Output: Constraint Variable
         self.add_output('clearance', shape=(nn,), units='m')
         self.add_output('noise_pl', shape=(nn,), units='Pa')
+        self.add_output('noise_pl_2', shape=(nn,), units='Pa')
         self.add_output('power_required', shape=(nn,), units='W')
 
         # Complex Step for all partials
@@ -127,6 +129,8 @@ class DroneTerrainODE(om.ExplicitComponent):
         self.declare_partials('clearance', ['x', 'y', 'z'], method='fd')
         self.declare_partials('noise_pl', ['x', 'y', 'z'], method='fd')
         self.declare_partials('noise_pl', ['vx', 'vy', 'vz'], method='fd')
+        self.declare_partials('noise_pl_2', ['x', 'y', 'z'], method='fd')
+        self.declare_partials('noise_pl_2', ['vx', 'vy', 'vz'], method='fd')
         self.declare_partials('power_required', ['x', 'y', 'z'], method='fd')
         self.declare_partials('power_required', ['vx', 'vy', 'vz'], method='fd')
 
@@ -158,7 +162,12 @@ class DroneTerrainODE(om.ExplicitComponent):
     
         noise = np.array(noise) 
         outputs['noise_pl'] = (1/rho) * np.log(np.sum(np.exp(rho * noise), axis=0))
+        rho = 0.1
+        outputs['noise_pl_2'] = np.sum(np.exp(rho * noise), axis=0)
         # 100 + 20 * np.log10(dist2) + 25 * np.log10(thrust_mag)
+
+        # KS noise to capture highest value and not integral in time 
+        # outputs['ks_noise'] = (1/rho) * np.log(np.sum(np.exp(rho * noise)))
 
         # 5. Power required 
         eps = 1e-6
@@ -213,6 +222,7 @@ avoid_points = list(zip(x_rand, y_rand, z_terrain))
 # --- 2. Create Problem and Trajectory ---
 prob = om.Problem(model=om.Group())
 
+# prob.driver = om.pyOptSparseDriver(optimizer='SNOPT')
 prob.driver = om.pyOptSparseDriver(optimizer='IPOPT')
 prob.driver.opt_settings['print_level'] = 5
 prob.driver.opt_settings['max_iter'] = 120
@@ -266,27 +276,60 @@ phase.add_state('annoyance',
                 ref=1000.0, 
                 units='Pa*s')
 
+phase.add_state('annoyance_2', 
+                rate_source='noise_pl_2', 
+                fix_initial=True, 
+                fix_final=False,
+                lower = 0, 
+                ref=10000.0, 
+                units='Pa*s')
+
 # define combined objective 
 class ObjectiveComp(om.ExplicitComponent):
     def setup(self):
+        #nn = self.options['num_nodes']
         self.add_input('time', units='s')
         self.add_input('energy_spent', units='J') 
         self.add_input('annoyance', units=None) 
+        self.add_input('annoyance_2', units=None) 
+        # self.add_input('noise_pl', shape=(nn,1), units='Pa')
         self.add_output('J')
         self.declare_partials('*', '*', method='cs')
     def compute(self, inputs, outputs):
-        outputs['J'] = 0.01 * inputs['time'] +  2.e-5 * inputs['energy_spent'] + 5.e-4 * inputs['annoyance']
+        rho = 0.1 
+        # noise = inputs['noise_pl']
+        # ks_noise = (1.0 / rho) * np.log(np.sum(np.exp(rho * noise)))
+        # outputs['J'] = 0.01 * inputs['time'] +  2.e-5 * inputs['energy_spent'] + 5.e-4 * inputs['annoyance'] + 1.e-1 * (1./rho) * np.log(inputs['annoyance_2'])
+        outputs['J'] = 0.01 * inputs['time'] +  2.e-5 * inputs['energy_spent'] + 5.e-2 * (1./rho) * np.log(inputs['annoyance_2'])
+    # def compute_partials(self, inputs, partials):
+    #     rho = 10.0
+    #     noise = inputs['noise_pl']
+        
+    #     # Re-calculate the denominator for the derivative
+    #     f_max = np.max(rho * noise)
+    #     exp_terms = np.exp(rho * noise - f_max)
+    #     sum_exp = np.sum(exp_terms)
+        
+    #     # dJ/dtime and dJ/denergy are constants
+    #     partials['J', 'time'] = 0.01
+    #     partials['J', 'energy_spent'] = 2.e-5
+        
+    #     # dJ/dnoise_pl is a vector (the Jacobian row)
+    #     # weight * (exp(rho*n) / sum(exp(rho*n)))
+    #     weight_ks = 0.01
+    #     partials['J', 'noise_pl'] = weight_ks * (exp_terms / sum_exp).T
 
 # 2. Link the phase results to this component
 # Dymos usually exposes these in the timeseries
 
+#nn = phase.options['transcription'].grid_data.num_nodes
 prob.model.add_subsystem('obj_comp', ObjectiveComp())
 prob.model.add_objective('obj_comp.J')
 
 prob.model.connect('traj.phase0.timeseries.time', 'obj_comp.time', src_indices=[-1])
 prob.model.connect('traj.phase0.timeseries.energy_spent', 'obj_comp.energy_spent', src_indices=[-1])
 prob.model.connect('traj.phase0.timeseries.annoyance', 'obj_comp.annoyance', src_indices=[-1])
-
+prob.model.connect('traj.phase0.timeseries.annoyance_2', 'obj_comp.annoyance_2', src_indices=[-1])
 
 # --- 5. Set Controls ---
 phase.add_control('ax', lower=-19, upper=19, units='m/s**2', ref=5)
@@ -303,8 +346,10 @@ prob.setup(check=True)
 # Set initial guesses for states
 prob.set_val('traj.phase0.t_initial', 0.0)
 prob.set_val('traj.phase0.t_duration', 50.0)
-prob.set_val('traj.phase0.states:x', phase.interp('x', xs =[0, 0.5, 1], ys= [-area_dim+100, 0., area_dim - 100]))
-prob.set_val('traj.phase0.states:y', phase.interp('y', xs =[0, 0.5, 1], ys= [-area_dim + 100, area_dim - 100., area_dim - 100]))
+prob.set_val('traj.phase0.states:x', phase.interp('x', xs =[0, 0.25, 0.5, 0.75, 1], ys= [-area_dim+100, -area_dim*0.5, 0., 0.5*area_dim, area_dim - 100]))
+prob.set_val('traj.phase0.states:y', phase.interp('y', xs =[0, 0.25, 0.5, 0.75, 1], ys= [-area_dim + 100, area_dim - 100., -area_dim + 100, area_dim - 100, area_dim - 100]))
+# prob.set_val('traj.phase0.states:x', phase.interp('x', xs =[0, 0.5, 1], ys= [-area_dim+100, 0., area_dim - 100]))
+# prob.set_val('traj.phase0.states:y', phase.interp('y', xs =[0, 0.5, 1], ys= [-area_dim + 100, area_dim - 100., area_dim - 100]))
 
 # z_start = interp((-400.,-400.))
 # z_end = interp((400.,400.)) 
@@ -320,7 +365,9 @@ prob.run_driver()
 final_time = prob.get_val('obj_comp.time')[0]
 #final_penalty = p.get_val('obj_comp.penalty')[0]
 energy_spent = prob.get_val('obj_comp.energy_spent')[0]
+#ks_noise = prob.get_val('obj_comp.noise_pl')
 annoyance = prob.get_val('obj_comp.annoyance')[0]
+annoyance_2 = prob.get_val('obj_comp.annoyance_2')[0]
 #acc_integral = p.get_val('obj_comp.acc_integral')[0]
 # total_lp_dose = p.get_val('obj_comp.total_lp_dose')[0]
 # ks_integral = p.get_val('obj_comp.ks_integral')[0]
@@ -333,6 +380,7 @@ print(f"Final Time:         {final_time:.4f} s")
 #print(f"Obstacle Penalty:   {final_penalty:.4f}")
 print(f"Energy Expenditure: {energy_spent:.4f}")
 print(f"Annoyance: {annoyance:.4f}")
+print(f"Annoyance 2: {annoyance_2:.4f}")
 #print(f"Acceleration integ: {acc_integral:.4f}")
 #print(f"TOT Lp time integ: {total_lp_dose:.4f}")
 #print(f"KS_INTEGRAL : {ks_integral:.4f}")
@@ -341,7 +389,7 @@ print(f"{'='*30}")
 
 
 # --- 8. Post-Processing ---
-sim_data = traj.simulate()
+# sim_data = traj.simulate()
 # You can use your previous z_map plotting code here to overlay the 'sim_data' trajectory!
 
 # --- 1. Extract Data ---
@@ -361,6 +409,7 @@ Az = prob.get_val('traj.phase0.timeseries.az')
 clearance = prob.get_val('traj.phase0.timeseries.clearance')
 energy_spent = prob.get_val('traj.phase0.timeseries.energy_spent')
 annoyance = prob.get_val('traj.phase0.timeseries.annoyance')
+annoyance_2 = prob.get_val('traj.phase0.timeseries.annoyance_2')
 
 
 # --- 2. Plotting the Result ---
@@ -417,7 +466,7 @@ plt.show() # This might open an interactive window depending on your Python setu
 fig = plt.figure(figsize=(15, 10))
 
 # Plot 2: Velocity Components
-ax2 = fig.add_subplot(2, 3, 1)
+ax2 = fig.add_subplot(2, 4, 1)
 ax2.plot(t, vx, label='Vx')
 ax2.plot(t, vy, label='Vy')
 ax2.plot(t, vz, label='Vz')
@@ -428,7 +477,7 @@ ax2.legend()
 ax2.grid(True)
 
 # Plot 3: Acceleration (Controls)
-ax3 = fig.add_subplot(2, 3, 2)
+ax3 = fig.add_subplot(2, 4, 2)
 ax3.step(t, Ax, where='post', label='ax')
 ax3.step(t, Ay, where='post', label='ay')
 ax3.step(t, Az, where='post', label='az')
@@ -439,7 +488,7 @@ ax3.legend()
 ax3.grid(True)
 
 # Plot 4: Altitude (Z) over time
-ax4 = fig.add_subplot(2, 3, 3)
+ax4 = fig.add_subplot(2, 4, 3)
 ax4.plot(t, z, color='purple')
 ax4.set_title("Altitude Profile")
 ax4.set_xlabel("Time (s)")
@@ -447,7 +496,7 @@ ax4.set_ylabel("Z (m)")
 ax4.grid(True)
 
 # Plot 5: Clearance over time
-ax4 = fig.add_subplot(2, 3, 4)
+ax4 = fig.add_subplot(2, 4, 4)
 ax4.plot(t, clearance, color='purple')
 ax4.set_title("Clearance from ground")
 ax4.set_xlabel("Time (s)")
@@ -455,7 +504,7 @@ ax4.set_ylabel("Z (m)")
 ax4.grid(True)
 
 # Plot 6: Energy spent over time
-ax4 = fig.add_subplot(2, 3, 5)
+ax4 = fig.add_subplot(2, 4, 5)
 ax4.plot(t, energy_spent, color='purple')
 ax4.set_title("Energy spent")
 ax4.set_xlabel("Time (s)")
@@ -463,9 +512,17 @@ ax4.set_ylabel("Energy (J)")
 ax4.grid(True)
 
 # Plot 6: Energy spent over time
-ax4 = fig.add_subplot(2, 3, 6)
+ax4 = fig.add_subplot(2, 4, 6)
 ax4.plot(t, annoyance, color='purple')
 ax4.set_title("Energy spent")
+ax4.set_xlabel("Time (s)")
+ax4.set_ylabel("Energy (J)")
+ax4.grid(True)
+
+# Plot 6: Energy spent over time
+ax4 = fig.add_subplot(2, 4, 7)
+ax4.plot(t, 10 * np.log(annoyance_2), color='purple')
+ax4.set_title("Annoyance 2")
 ax4.set_xlabel("Time (s)")
 ax4.set_ylabel("Energy (J)")
 ax4.grid(True)

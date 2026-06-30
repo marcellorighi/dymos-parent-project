@@ -1,0 +1,55 @@
+
+ ==============================
+ S N O P T  7.7.7    (Feb 2021)
+ ==============================
+ print_level               5
+ XXX  Keyword not recognized:         PRINT_LEVEL
+ max_iter             120
+ XXX  Keyword not recognized:         MAX_ITER
+
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+ ==============================
+ S N O P T  7.7.7    (Feb 2021)
+ ==============================
+ print_level               5
+ XXX  Keyword not recognized:         PRINT_LEVEL
+ max_iter             120
+ XXX  Keyword not recognized:         MAX_ITER
+
+
+
+ Nonlinear constraints     222     Linear constraints       0
+ Nonlinear variables       223     Linear variables         0
+ Jacobian  variables       223     Objective variables    223
+ Total constraints         222     Total variables        223
+
+
+
+ The user has defined   18624   out of   18624   constraint gradients.
+ The user has defined     223   out of     223   objective  gradients.
+
+
+ SNOPTC EXIT  40 -- terminated after numerical difficulties
+ SNOPTC INFO  44 -- ill-conditioned null-space basis
+
+ Problem name                 Optimiza
+ No. of iterations                 178   Objective                   -Infinity
+ No. of major iterations             0   Linear    obj. term  0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear obj. term         -Infinity
+ User function calls (total)         2
+ No. of degenerate steps             8   Percentage                       4.49
+ Max x                       1 5.0E+01   Max pi                    222 0.0E+00
+ Max Primal infeas         417 2.1E+01   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.1E+01
+
+
+
+ Solution printed on file  18
+
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       0.75 seconds
+ Time for solution output                       0.00 seconds
+ Time for constraint functions                  0.75 seconds
+ Time for objective function                    0.00 seconds

@@ -1,0 +1,626 @@
+
+         ==============================
+         S N O P T  7.7.7    (Feb 2021)
+         ==============================
+      Print file 18
+      Summary file 19
+      Minor print level               0
+      Minimize
+      Derivative level               3
+      Iterations limit        10000000
+      Minor iterations limit           10000
+      Proximal iterations limit           10000
+      Total character workspace             500
+      Total integer workspace           45000
+      Total real workspace           89500
+      print_level               5
+ XXX  Keyword not recognized:         PRINT_LEVEL
+      max_iter             120
+ XXX  Keyword not recognized:         MAX_ITER
+1
+
+ SNMEMB EXIT 100 -- finished successfully
+ SNMEMB INFO 104 -- memory requirements estimated
+
+         ==============================
+         S N O P T  7.7.7    (Feb 2021)
+         ==============================
+      Print file 18
+      Summary file 19
+      Minor print level               0
+      Minimize
+      Derivative level               3
+      Iterations limit        10000000
+      Minor iterations limit           10000
+      Proximal iterations limit           10000
+      Total character workspace             500
+      Total integer workspace          249950
+      Total real workspace          240621
+      print_level               5
+ XXX  Keyword not recognized:         PRINT_LEVEL
+      max_iter             120
+ XXX  Keyword not recognized:         MAX_ITER
+1
+
+ Parameters
+ ==========
+
+ Files
+ -----
+ Solution file..........         0       Old basis file ........         0       Standard input.........         5
+ Insert file............         0       New basis file ........         0       (Printer)..............        18
+ Punch file.............         0       Backup basis file......         0       (Specs file)...........         0
+ Load file..............         0       Dump file..............         0       Standard output........         6
+
+ Frequencies
+ -----------
+ Print frequency........       100       Check frequency........        60       Save new basis map.....       100
+ Summary frequency......       100       Factorization frequency        50       Expand frequency.......     10000
+
+ QP subproblems
+ --------------
+ QPsolver Cholesky......
+ Scale tolerance........     0.900       Minor feasibility tol..  1.00E-06       Iteration limit........  10000000
+ Scale option...........         0       Minor optimality  tol..  1.00E-06       Minor print level......         0
+ Crash tolerance........     0.100       Pivot tolerance........  3.25E-11       New superbasics........        99
+ Crash option...........         3       Elastic weight.........  1.00E+05
+
+ Partial pricing
+ ---------------
+ LP Partial price.......         1       Prtl price section ( A)       223       Prtl price section (-I)       222
+ QP Partial price.......         1       Prtl price section ( A)       223       Prtl price section (-I)       222
+
+ The SQP Method
+ --------------
+ Minimize...............                 Cold start.............                 Proximal Point method..         1
+ Nonlinear objectiv vars       223       Major optimality tol...  2.00E-06       Function precision.....  3.00E-13
+ Unbounded step size....  1.00E+20       Superbasics limit......       223       Difference interval....  5.48E-07
+ Unbounded objective....  1.00E+10       Reduced Hessian dim....       223       Central difference int.  6.70E-05
+ Major step limit.......  2.00E+00       Derivative linesearch..                 Derivative level.......         3
+ Major iterations limit.      1000       Linesearch tolerance...   0.90000       Verify level...........         0
+ Minor iterations limit.     10000       Penalty parameter......  0.00E+00       Major Print Level......         1
+ Time limit (secs)...... 9999999.0
+
+ Hessian Approximation
+ ---------------------
+ Hessian limited-memory.                 Hessian updates........        10       Hessian frequency......  99999999
+                                                                                 Hessian flush..........  99999999
+
+ Nonlinear constraints
+ ---------------------
+ Nonlinear constraints..       222       Major feasibility tol..  1.00E-06       Violation limit........  1.00E+06
+ Nonlinear Jacobian vars       223
+
+ Miscellaneous
+ -------------
+ LU factor tolerance....      3.99       LU singularity tol.....  3.25E-11       Timing level...........         3
+ LU update tolerance....      3.99       LU swap tolerance......  1.22E-04       Debug level............         0
+ LU partial  pivoting...                 eps (machine precision)  2.22E-16       System information.....        No
+                                                                                 Sticky parameters......        No
+1
+
+
+
+
+ Matrix statistics
+ -----------------
+               Total      Normal        Free       Fixed     Bounded
+ Rows            222           0           0         177          45
+ Columns         223          45          56           0         122
+
+ No. of matrix elements                18624     Density      37.620
+ Biggest  constant element        0.0000E+00  (excluding fixed columns,
+ Smallest constant element        0.0000E+00   free rows, and RHS)
+
+ No. of objective coefficients             0
+
+ Nonlinear constraints     222     Linear constraints       0
+ Nonlinear variables       223     Linear variables         0
+ Jacobian  variables       223     Objective variables    223
+ Total constraints         222     Total variables        223
+1
+
+
+
+ The user has defined   18624   out of   18624   constraint gradients.
+ The user has defined     223   out of     223   objective  gradients.
+
+ Cheap test of user-supplied problem derivatives...
+
+ The constraint gradients seem to be OK.
+
+ -->  The largest discrepancy was    7.39E-05  in constraint   350
+
+
+ XXX  The objective  gradients seem to be incorrect.
+
+ Gradient projected in one direction                 NaN
+ Difference approximation                       Infinity
+1
+
+1
+
+ SNOPTC EXIT  40 -- terminated after numerical difficulties
+ SNOPTC INFO  44 -- ill-conditioned null-space basis
+
+ Problem name                 Optimiza
+ No. of iterations                 178   Objective                   -Infinity
+ No. of major iterations             0   Linear    obj. term  0.0000000000E+00
+ Penalty parameter           0.000E+00   Nonlinear obj. term         -Infinity
+ User function calls (total)         2
+ No. of degenerate steps             8   Percentage                       4.49
+ Max x                       1 5.0E+01   Max pi                    222 0.0E+00
+ Max Primal infeas         417 2.1E+01   Max Dual infeas             0 0.0E+00
+ Nonlinear constraint violn    2.1E+01
+1
+
+ Name           Optimiza                 Objective Value             -Infinity
+
+ Status         Optimal Soln             Iteration    178    Superbasics     0
+
+ Objective      -------- (Min)
+ RHS            --------
+ Ranges         --------
+ Bounds         --------
+
+ Section 1 - Constraints
+
+  Number  ...Row.. State  ...Value......  Slack Value...  ..Lower Limit.  ..Upper Limit.  .Dual Variable    ..i
+
+     224  r      1 I  EQ         1.95000         1.95000          .               .                  NaN      1
+     225  r      2 I  EQ         1.95000         1.95000          .               .                  NaN      2
+     226  r      3 I  EQ         1.95000         1.95000          .               .                  NaN      3
+     227  r      4 I  EQ         2.05000         2.05000          .               .                  NaN      4
+     228  r      5 I  EQ         2.35000         2.35000          .               .                  NaN      5
+     229  r      6 I  EQ         2.35000         2.35000          .               .                  NaN      6
+     230  r      7 I  EQ         2.35000         2.35000          .               .                  NaN      7
+     231  r      8 I  EQ         2.35000         2.35000          .               .                  NaN      8
+     232  r      9 I  EQ         2.35000         2.35000          .               .                  NaN      9
+     233  r     10 I  EQ         2.35000         2.35000          .               .                  NaN     10
+     234  r     11 I  EQ         2.35000         2.35000          .               .                  NaN     11
+     235  r     12 I  EQ         2.05000         2.05000          .               .                  NaN     12
+     236  r     13 I  EQ         1.95000         1.95000          .               .                  NaN     13
+     237  r     14 I  EQ         1.95000         1.95000          .               .                  NaN     14
+     238  r     15 I  EQ         1.95000         1.95000          .               .                  NaN     15
+     239  r     16 I  BS         8.75000         8.75000          .               .        -100000.00000     16
+     240  r     17 I  EQ         8.75000         8.75000          .               .                  NaN     17
+     241  r     18 I  EQ         8.75000         8.75000          .               .                  NaN     18
+     242  r     19 I  EQ         4.35000         4.35000          .               .                  NaN     19
+     243  r     20 I  EQ        -8.85000        -8.85000          .               .                  NaN     20
+     244  r     21 I  EQ        -8.85000        -8.85000          .               .                  NaN     21
+     245  r     22 I  EQ        -8.85000        -8.85000          .               .                  NaN     22
+     246  r     23 I  EQ        -0.05000        -0.05000          .               .                  NaN     23
+     247  r     24 I  EQ         8.75000         8.75000          .               .                  NaN     24
+     248  r     25 I  EQ         8.75000         8.75000          .               .                  NaN     25
+     249  r     26 I  EQ         8.75000         8.75000          .               .                  NaN     26
+     250  r     27 I  EQ         2.15000         2.15000          .               .                  NaN     27
+     251  r     28 I  EQ        -0.05000        -0.05000          .               .                  NaN     28
+     252  r     29 I  EQ        -0.05000        -0.05000          .               .                  NaN     29
+     253  r     30 I  EQ        -0.05000        -0.05000          .               .                  NaN     30
+     254  r     31 I  EQ         0.03609         0.03609          .               .                  NaN     31
+     255  r     32 I  EQ         0.03609         0.03609          .               .                  NaN     32
+     256  r     33 I  EQ         0.03609         0.03609          .               .                  NaN     33
+     257  r     34 I  EQ         0.03609         0.03609          .               .                  NaN     34
+     258  r     35 I  EQ         0.03609         0.03609          .               .                  NaN     35
+     259  r     36 I  EQ         0.03609         0.03609          .               .                  NaN     36
+     260  r     37 I  EQ         0.03609         0.03609          .               .                  NaN     37
+     261  r     38 I  EQ         0.03609         0.03609          .               .                  NaN     38
+     262  r     39 I  EQ         0.03609         0.03609          .               .                  NaN     39
+     263  r     40 I  EQ         0.03609         0.03609          .               .                  NaN     40
+     264  r     41 I  EQ         0.03609         0.03609          .               .                  NaN     41
+     265  r     42 I  EQ         0.03609         0.03609          .               .                  NaN     42
+     266  r     43 I  EQ         0.03609         0.03609          .               .                  NaN     43
+     267  r     44 I  EQ         0.03609         0.03609          .               .                  NaN     44
+     268  r     45 I  EQ         0.03609         0.03609          .               .                  NaN     45
+     269  r     46    EQ          .               .               .               .                  NaN     46
+     270  r     47    EQ          .               .               .               .                  NaN     47
+     271  r     48    EQ          .               .               .               .                  NaN     48
+     272  r     49    EQ          .               .               .               .                  NaN     49
+     273  r     50    EQ          .               .               .               .                  NaN     50
+     274  r     51    EQ          .               .               .               .                  NaN     51
+     275  r     52    EQ          .               .               .               .                  NaN     52
+     276  r     53    EQ          .               .               .               .                  NaN     53
+     277  r     54    EQ          .               .               .               .                  NaN     54
+     278  r     55    EQ          .               .               .               .                  NaN     55
+     279  r     56    EQ          .               .               .               .                  NaN     56
+     280  r     57    EQ          .               .               .               .                  NaN     57
+     281  r     58    EQ          .               .               .               .                  NaN     58
+     282  r     59    EQ          .               .               .               .                  NaN     59
+     283  r     60    EQ          .               .               .               .                  NaN     60
+     284  r     61    EQ          .               .               .               .                  NaN     61
+     285  r     62    EQ          .               .               .               .                  NaN     62
+     286  r     63    EQ          .               .               .               .                  NaN     63
+     287  r     64    EQ          .               .               .               .                  NaN     64
+     288  r     65    EQ          .               .               .               .                  NaN     65
+     289  r     66    EQ          .               .               .               .                  NaN     66
+     290  r     67    EQ          .               .               .               .                  NaN     67
+     291  r     68    EQ          .               .               .               .                  NaN     68
+     292  r     69    EQ          .               .               .               .                  NaN     69
+     293  r     70    EQ          .               .               .               .                  NaN     70
+     294  r     71    EQ          .               .               .               .                  NaN     71
+     295  r     72    EQ          .               .               .               .                  NaN     72
+     296  r     73    EQ          .               .               .               .                  NaN     73
+     297  r     74    EQ          .               .               .               .                  NaN     74
+     298  r     75    EQ          .               .               .               .                  NaN     75
+     299  r     76 I  EQ         2.45250         2.45250          .               .                  NaN     76
+     300  r     77 I  EQ         2.45250         2.45250          .               .                  NaN     77
+     301  r     78 I  EQ         2.45250         2.45250          .               .                  NaN     78
+     302  r     79 I  EQ         2.45250         2.45250          .               .                  NaN     79
+     303  r     80 I  EQ         2.45250         2.45250          .               .                  NaN     80
+     304  r     81 I  EQ         2.45250         2.45250          .               .                  NaN     81
+     305  r     82 I  EQ         2.45250         2.45250          .               .                  NaN     82
+     306  r     83 I  EQ         2.45250         2.45250          .               .                  NaN     83
+     307  r     84 I  EQ         2.45250         2.45250          .               .                  NaN     84
+     308  r     85 I  EQ         2.45250         2.45250          .               .                  NaN     85
+     309  r     86 I  EQ         2.45250         2.45250          .               .                  NaN     86
+     310  r     87 I  EQ         2.45250         2.45250          .               .                  NaN     87
+     311  r     88 I  EQ         2.45250         2.45250          .               .                  NaN     88
+     312  r     89 I  EQ         2.45250         2.45250          .               .                  NaN     89
+     313  r     90 I  EQ         2.45250         2.45250          .               .                  NaN     90
+     314  r     91 I  EQ        -0.00008        -0.00008          .               .                  NaN     91
+     315  r     92 I  EQ        -0.00000        -0.00000          .               .                  NaN     92
+     316  r     93 I  EQ        -0.00000        -0.00000          .               .                  NaN     93
+     317  r     94 I  EQ        -0.00000        -0.00000          .               .                  NaN     94
+     318  r     95 I  EQ        -0.00000        -0.00000          .               .                  NaN     95
+     319  r     96 I  EQ        -0.00000        -0.00000          .               .                  NaN     96
+     320  r     97 I  EQ        -0.00000        -0.00000          .               .                  NaN     97
+     321  r     98 I  EQ        -0.00000        -0.00000          .               .                  NaN     98
+     322  r     99 I  EQ        -0.00000        -0.00000          .               .                  NaN     99
+     323  r    100 I  EQ        -0.00000        -0.00000          .               .                  NaN    100
+     324  r    101 I  EQ        -0.00000        -0.00000          .               .                  NaN    101
+     325  r    102 I  EQ        -0.00000        -0.00000          .               .                  NaN    102
+     326  r    103 I  EQ        -0.00000        -0.00000          .               .                  NaN    103
+     327  r    104 I  EQ        -0.00000        -0.00000          .               .                  NaN    104
+     328  r    105 I  EQ        -0.00000        -0.00000          .               .                  NaN    105
+     329  r    106 I  EQ        -0.04129        -0.04129          .               .                  NaN    106
+     330  r    107 I  EQ        -0.07600        -0.07600          .               .                  NaN    107
+     331  r    108 I  EQ        -0.00277        -0.00277          .               .                  NaN    108
+     332  r    109 I  EQ         0.02125         0.02125          .               .                  NaN    109
+     333  r    110 I  EQ        -0.00026        -0.00026          .               .                  NaN    110
+     334  r    111 I  EQ        -0.02689        -0.02689          .               .                  NaN    111
+     335  r    112 I  EQ        -0.05696        -0.05696          .               .                  NaN    112
+     336  r    113 I  EQ        -0.02837        -0.02837          .               .                  NaN    113
+     337  r    114 I  EQ        -0.05946        -0.05946          .               .                  NaN    114
+     338  r    115 I  EQ        -0.02646        -0.02646          .               .                  NaN    115
+     339  r    116 I  EQ        -0.04618        -0.04618          .               .                  NaN    116
+     340  r    117 I  EQ        -0.04371        -0.04371          .               .                  NaN    117
+     341  r    118 I  EQ        -0.04086        -0.04086          .               .                  NaN    118
+     342  r    119 I  EQ        -0.07806        -0.07806          .               .                  NaN    119
+     343  r    120 I  EQ        -0.04702        -0.04702          .               .                  NaN    120
+     344  r    121 I  EQ        -0.01461        -0.01461          .               .                  NaN    121
+     345  r    122 I  EQ        -0.02412        -0.02412          .               .                  NaN    122
+     346  r    123 I  EQ        -0.00828        -0.00828          .               .                  NaN    123
+     347  r    124 I  EQ        -0.00540        -0.00540          .               .                  NaN    124
+     348  r    125 I  EQ        -0.00802        -0.00802          .               .                  NaN    125
+     349  r    126 I  EQ        -0.01958        -0.01958          .               .                  NaN    126
+     350  r    127 I  EQ        -0.03004        -0.03004          .               .                  NaN    127
+     351  r    128 I  EQ        -0.01386        -0.01386          .               .                  NaN    128
+     352  r    129 I  EQ        -0.02478        -0.02478          .               .                  NaN    129
+     353  r    130 I  EQ        -0.01820        -0.01820          .               .                  NaN    130
+     354  r    131 I  EQ        -0.02100        -0.02100          .               .                  NaN    131
+     355  r    132 I  EQ        -0.01470        -0.01470          .               .                  NaN    132
+     356  r    133 I  EQ        -0.01148        -0.01148          .               .                  NaN    133
+     357  r    134 I  EQ        -0.01508        -0.01508          .               .                  NaN    134
+     358  r    135 I  EQ        -0.00873        -0.00873          .               .                  NaN    135
+     359  r    136    EQ          .               .               .               .                  NaN    136
+     360  r    137    EQ          .               .               .               .                  NaN    137
+     361  r    138    EQ          .               .               .               .                  NaN    138
+     362  r    139    EQ          .               .               .               .                  NaN    139
+     363  r    140    EQ          .               .               .               .                  NaN    140
+     364  r    141    EQ          .               .               .               .                  NaN    141
+     365  r    142    EQ          .               .               .               .                  NaN    142
+     366  r    143    EQ          .               .               .               .                  NaN    143
+     367  r    144    EQ          .               .               .               .                  NaN    144
+     368  r    145    EQ          .               .               .               .                  NaN    145
+     369  r    146    EQ          .               .               .               .                  NaN    146
+     370  r    147    EQ          .               .               .               .                  NaN    147
+     371  r    148    EQ          .               .               .               .                  NaN    148
+     372  r    149    EQ          .               .               .               .                  NaN    149
+     373  r    150    EQ          .               .               .               .                  NaN    150
+     374  r    151    EQ          .               .               .               .                  NaN    151
+     375  r    152    EQ          .               .               .               .                  NaN    152
+     376  r    153    EQ          .               .               .               .                  NaN    153
+     377  r    154    EQ          .               .               .               .                  NaN    154
+     378  r    155    EQ          .               .               .               .                  NaN    155
+     379  r    156    EQ          .               .               .               .                  NaN    156
+     380  r    157    EQ          .               .               .               .                  NaN    157
+     381  r    158    EQ          .               .               .               .                  NaN    158
+     382  r    159    EQ          .               .               .               .                  NaN    159
+     383  r    160    EQ          .               .               .               .                  NaN    160
+     384  r    161    EQ          .               .               .               .                  NaN    161
+     385  r    162    EQ          .               .               .               .                  NaN    162
+     386  r    163    EQ          .               .               .               .                  NaN    163
+     387  r    164    EQ          .               .               .               .                  NaN    164
+     388  r    165    EQ          .               .               .               .                  NaN    165
+     389  r    166    EQ          .               .               .               .                  NaN    166
+     390  r    167    EQ          .               .               .               .                  NaN    167
+     391  r    168    EQ          .               .               .               .                  NaN    168
+     392  r    169    EQ          .               .               .               .                  NaN    169
+     393  r    170    EQ          .               .               .               .                  NaN    170
+     394  r    171    EQ          .               .               .               .                  NaN    171
+     395  r    172    EQ          .               .               .               .                  NaN    172
+     396  r    173    EQ          .               .               .               .                  NaN    173
+     397  r    174    EQ          .               .               .               .                  NaN    174
+     398  r    175    EQ          .               .               .               .                  NaN    175
+     399  r    176    EQ          .               .               .               .                  NaN    176
+     400  r    177    EQ          .               .               .               .                  NaN    177
+     401  r    178    BS         1.11111         0.11111         1.0            13.33333          .         178
+     402  r    179 I  LL        -0.35243        -1.35243         1.0            13.33333             NaN    179
+     403  r    180    BS         1.15293         0.15293         1.0            13.33333          .         180
+     404  r    181    BS         1.15293         0.15293         1.0            13.33333          .         181
+     405  r    182 I  BS         0.01214        -0.98786         1.0            13.33333          .         182
+     406  r    183 I  UL        -3.84529        -4.84529         1.0            13.33333             NaN    183
+     407  r    184 I  BS        -3.84529        -4.84529         1.0            13.33333          .         184
+     408  r    185 I  BS        -4.95056        -5.95056         1.0            13.33333          .         185
+     409  r    186 I  LL        -3.80001        -4.80001         1.0            13.33333             NaN    186
+     410  r    187 I  BS        -3.80001        -4.80001         1.0            13.33333          .         187
+     411  r    188 I  BS        -3.35050        -4.35050         1.0            13.33333          .         188
+     412  r    189 I  BS        -2.97951        -3.97951         1.0            13.33333          .         189
+     413  r    190 I  BS        -2.97951        -3.97951         1.0            13.33333          .         190
+     414  r    191 I  LL        -4.03757        -5.03757         1.0            13.33333             NaN    191
+     415  r    192 I  BS       -13.93437       -14.93437         1.0            13.33333          .         192
+     416  r    193 I  BS       -13.93437       -14.93437         1.0            13.33333          .         193
+     417  r    194 I  UL       -20.18260       -21.18260         1.0            13.33333             NaN    194
+     418  r    195 I  LL       -10.72320       -11.72320         1.0            13.33333             NaN    195
+     419  r    196 I  BS       -10.72320       -11.72320         1.0            13.33333          .         196
+     420  r    197 I  BS         0.78203        -0.21797         1.0            13.33333          .         197
+     421  r    198    FR         5.27257         4.27257         1.0            13.33333             NaN    198
+     422  r    199    BS         5.27257         4.27257         1.0            13.33333          .         199
+     423  r    200    BS         5.51930         4.51930         1.0            13.33333          .         200
+     424  r    201    BS         5.69306         4.69306         1.0            13.33333          .         201
+     425  r    202    BS         5.69306         4.69306         1.0            13.33333          .         202
+     426  r    203    BS         2.48474         1.48474         1.0            13.33333          .         203
+     427  r    204 I  LL        -6.49542        -7.49542         1.0            13.33333             NaN    204
+     428  r    205 I  BS        -6.49542        -7.49542         1.0            13.33333          .         205
+     429  r    206 I  BS       -19.02512       -20.02512         1.0            13.33333          .         206
+     430  r    207 I  LL       -19.77826       -20.77826         1.0            13.33333             NaN    207
+     431  r    208 I  BS       -19.77826       -20.77826         1.0            13.33333          .         208
+     432  r    209 I  LL        -9.17834       -10.17834         1.0            13.33333             NaN    209
+     433  r    210 I  BS        -8.06357        -9.06357         1.0            13.33333          .         210
+     434  r    211 I  BS        -8.06357        -9.06357         1.0            13.33333          .         211
+     435  r    212 I  BS        -8.16266        -9.16266         1.0            13.33333          .         212
+     436  r    213 I  BS        -6.86501        -7.86501         1.0            13.33333          .         213
+     437  r    214 I  BS        -6.86501        -7.86501         1.0            13.33333          .         214
+     438  r    215 I  BS        -5.47711        -6.47711         1.0            13.33333          .         215
+     439  r    216 I  BS        -3.81679        -4.81679         1.0            13.33333          .         216
+     440  r    217 I  BS        -3.81679        -4.81679         1.0            13.33333          .         217
+     441  r    218 I  LL        -2.20799        -3.20799         1.0            13.33333             NaN    218
+     442  r    219 I  BS        -0.76612        -1.76612         1.0            13.33333          .         219
+     443  r    220 I  BS        -0.76612        -1.76612         1.0            13.33333          .         220
+     444  r    221 I  LL         0.32759        -0.67241         1.0            13.33333             NaN    221
+     445  r    222    BS         1.11111         0.11111         1.0            13.33333          .         222
+1
+
+ Section 2 - Variables
+
+  Number  .Column. State  ...Value......  .Obj Gradient.  ..Lower Limit.  ..Upper Limit.  .Dual Variable    m+j
+
+       1  x      1    BS        50.00000             NaN         1.0           500.00000             NaN    223
+       2  x      2    BS       -19.33333             NaN       -23.90000        23.90000             NaN    224
+       3  x      3    BS       -16.66667             NaN       -23.90000        23.90000             NaN    225
+       4  x      4    BS       -14.00000             NaN       -23.90000        23.90000             NaN    226
+       5  x      5    BS       -11.20000             NaN       -23.90000        23.90000             NaN    227
+       6  x      6    BS        -8.00000             NaN       -23.90000        23.90000             NaN    228
+       7  x      7    BS        -4.80000             NaN       -23.90000        23.90000             NaN    229
+       8  x      8    BS        -1.60000             NaN       -23.90000        23.90000             NaN    230
+       9  x      9    BS         1.60000             NaN       -23.90000        23.90000             NaN    231
+      10  x     10    BS         4.80000             NaN       -23.90000        23.90000             NaN    232
+      11  x     11    BS         8.00000             NaN       -23.90000        23.90000             NaN    233
+      12  x     12    BS        11.20000             NaN       -23.90000        23.90000             NaN    234
+      13  x     13    FR        14.00000             NaN       -23.90000        23.90000             NaN    235
+      14  x     14    BS        16.66667             NaN       -23.90000        23.90000             NaN    236
+      15  x     15    BS        19.33333             NaN       -23.90000        23.90000             NaN    237
+      16  x     16    BS       -10.26667             NaN       -23.90000        23.90000             NaN    238
+      17  x     17    BS         1.46667             NaN       -23.90000        23.90000             NaN    239
+      18  x     18    BS        13.20000             NaN       -23.90000        23.90000             NaN    240
+      19  x     19    BS        19.06667             NaN       -23.90000        23.90000             NaN    241
+      20  x     20    BS         7.33333             NaN       -23.90000        23.90000             NaN    242
+      21  x     21    BS        -4.40000             NaN       -23.90000        23.90000             NaN    243
+      22  x     22    BS       -16.13333             NaN       -23.90000        23.90000             NaN    244
+      23  x     23    BS       -16.13333             NaN       -23.90000        23.90000             NaN    245
+      24  x     24    BS        -4.40000             NaN       -23.90000        23.90000             NaN    246
+      25  x     25    BS         7.33333             NaN       -23.90000        23.90000             NaN    247
+      26  x     26    BS        19.06667             NaN       -23.90000        23.90000             NaN    248
+      27  x     27    BS        22.00000             NaN       -23.90000        23.90000             NaN    249
+      28  x     28    BS        22.00000             NaN       -23.90000        23.90000             NaN    250
+      29  x     29    BS        22.00000             NaN       -23.90000        23.90000             NaN    251
+      30  x     30    BS        -0.12411             NaN           None            None              NaN    252
+      31  x     31    BS        -0.04266             NaN           None            None              NaN    253
+      32  x     32    BS         0.03879             NaN           None            None              NaN    254
+      33  x     33    BS         0.12025             NaN           None            None              NaN    255
+      34  x     34    BS         0.20170             NaN           None            None              NaN    256
+      35  x     35    BS         0.28315             NaN           None            None              NaN    257
+      36  x     36    BS         0.36461             NaN           None            None              NaN    258
+      37  x     37    BS         0.44606             NaN           None            None              NaN    259
+      38  x     38    BS         0.52751             NaN           None            None              NaN    260
+      39  x     39    BS         0.60897             NaN           None            None              NaN    261
+      40  x     40    BS         0.69042             NaN           None            None              NaN    262
+      41  x     41    BS         0.77188             NaN           None            None              NaN    263
+      42  x     42    BS         0.85333             NaN           None            None              NaN    264
+      43  x     43    BS         0.93478             NaN           None            None              NaN    265
+      44  x     44    BS         0.10000             NaN           None            None              NaN    266
+      45  x     45    BS         0.10000             NaN           None            None              NaN    267
+      46  x     46    BS         0.10000             NaN           None            None              NaN    268
+      47  x     47    BS         0.10000             NaN           None            None              NaN    269
+      48  x     48    BS         0.10000             NaN           None            None              NaN    270
+      49  x     49    BS         0.10000             NaN           None            None              NaN    271
+      50  x     50    BS         0.10000             NaN           None            None              NaN    272
+      51  x     51    BS         0.10000             NaN           None            None              NaN    273
+      52  x     52    BS         0.10000             NaN           None            None              NaN    274
+      53  x     53    BS         0.10000             NaN           None            None              NaN    275
+      54  x     54    BS         0.10000             NaN           None            None              NaN    276
+      55  x     55    BS         0.10000             NaN           None            None              NaN    277
+      56  x     56    BS         0.10000             NaN           None            None              NaN    278
+      57  x     57    BS         0.10000             NaN           None            None              NaN    279
+      58  x     58    BS         0.10000             NaN           None            None              NaN    280
+      59  x     59    BS         0.10000             NaN           None            None              NaN    281
+      60  x     60    BS         0.10000             NaN           None            None              NaN    282
+      61  x     61    BS         0.10000             NaN           None            None              NaN    283
+      62  x     62    BS         0.10000             NaN           None            None              NaN    284
+      63  x     63    BS         0.10000             NaN           None            None              NaN    285
+      64  x     64    BS         0.10000             NaN           None            None              NaN    286
+      65  x     65    BS         0.10000             NaN           None            None              NaN    287
+      66  x     66    BS         0.10000             NaN           None            None              NaN    288
+      67  x     67    BS         0.10000             NaN           None            None              NaN    289
+      68  x     68    BS         0.10000             NaN           None            None              NaN    290
+      69  x     69    BS         0.10000             NaN           None            None              NaN    291
+      70  x     70    BS         0.10000             NaN           None            None              NaN    292
+      71  x     71    BS         0.10000             NaN           None            None              NaN    293
+      72  x     72    BS         0.10000             NaN           None            None              NaN    294
+      73  x     73    BS         0.10000             NaN           None            None              NaN    295
+      74  x     74    BS         0.10000             NaN           None            None              NaN    296
+      75  x     75    BS         0.10000             NaN           None            None              NaN    297
+      76  x     76    BS         0.10000             NaN           None            None              NaN    298
+      77  x     77    BS         0.10000             NaN           None            None              NaN    299
+      78  x     78    BS         0.10000             NaN           None            None              NaN    300
+      79  x     79    BS         0.10000             NaN           None            None              NaN    301
+      80  x     80    BS         0.10000             NaN           None            None              NaN    302
+      81  x     81    BS         0.10000             NaN           None            None              NaN    303
+      82  x     82    BS         0.10000             NaN           None            None              NaN    304
+      83  x     83    BS         0.10000             NaN           None            None              NaN    305
+      84  x     84    BS         0.10000             NaN           None            None              NaN    306
+      85  x     85    BS         0.10000             NaN           None            None              NaN    307
+      86  x     86 D  BS          .                  NaN          .                None              NaN    308
+      87  x     87 D  BS          .                  NaN          .                None              NaN    309
+      88  x     88 D  BS          .                  NaN          .                None              NaN    310
+      89  x     89 D  BS          .                  NaN          .                None              NaN    311
+      90  x     90 D  BS          .                  NaN          .                None              NaN    312
+      91  x     91 D  BS          .                  NaN          .                None              NaN    313
+      92  x     92 D  BS          .                  NaN          .                None              NaN    314
+      93  x     93 D  BS          .                  NaN          .                None              NaN    315
+      94  x     94 D  BS          .                  NaN          .                None              NaN    316
+      95  x     95 D  BS          .                  NaN          .                None              NaN    317
+      96  x     96 D  BS          .                  NaN          .                None              NaN    318
+      97  x     97 D  BS          .                  NaN          .                None              NaN    319
+      98  x     98 D  BS          .                  NaN          .                None              NaN    320
+      99  x     99 D  BS          .                  NaN          .                None              NaN    321
+     100  x    100 D  BS          .                  NaN          .                None              NaN    322
+     101  x    101    BS         0.00100             NaN          .                None              NaN    323
+     102  x    102    FR         0.00100             NaN          .                None              NaN    324
+     103  x    103    BS         0.00100             NaN          .                None              NaN    325
+     104  x    104    BS         0.00100             NaN          .                None              NaN    326
+     105  x    105    BS         0.00100             NaN          .                None              NaN    327
+     106  x    106    BS         0.00100             NaN          .                None              NaN    328
+     107  x    107    BS         0.00100             NaN          .                None              NaN    329
+     108  x    108    BS         0.00100             NaN          .                None              NaN    330
+     109  x    109    BS         0.00100             NaN          .                None              NaN    331
+     110  x    110    BS         0.00100             NaN          .                None              NaN    332
+     111  x    111    BS         0.00100             NaN          .                None              NaN    333
+     112  x    112    BS         0.00100             NaN          .                None              NaN    334
+     113  x    113    BS         0.00100             NaN          .                None              NaN    335
+     114  x    114    BS         0.00100             NaN          .                None              NaN    336
+     115  x    115    BS         0.00100             NaN          .                None              NaN    337
+     116  x    116 D  BS          .                  NaN          .                None              NaN    338
+     117  x    117 D  BS          .                  NaN          .                None              NaN    339
+     118  x    118 D  BS          .                  NaN          .                None              NaN    340
+     119  x    119 D  BS          .                  NaN          .                None              NaN    341
+     120  x    120 D  BS          .                  NaN          .                None              NaN    342
+     121  x    121 D  BS          .                  NaN          .                None              NaN    343
+     122  x    122 D  BS          .                  NaN          .                None              NaN    344
+     123  x    123 D  BS          .                  NaN          .                None              NaN    345
+     124  x    124 D  BS          .                  NaN          .                None              NaN    346
+     125  x    125 D  BS          .                  NaN          .                None              NaN    347
+     126  x    126 D  BS          .                  NaN          .                None              NaN    348
+     127  x    127 D  BS          .                  NaN          .                None              NaN    349
+     128  x    128 D  BS          .                  NaN          .                None              NaN    350
+     129  x    129 D  BS          .                  NaN          .                None              NaN    351
+     130  x    130 D  BS          .                  NaN          .                None              NaN    352
+     131  x    131    FR          .               .             -3.80000         3.80000             NaN    353
+     132  x    132    BS          .               .             -3.80000         3.80000             NaN    354
+     133  x    133    BS          .               .             -3.80000         3.80000             NaN    355
+     134  x    134    FR          .               .             -3.80000         3.80000             NaN    356
+     135  x    135    BS          .               .             -3.80000         3.80000             NaN    357
+     136  x    136    FR          .               .             -3.80000         3.80000             NaN    358
+     137  x    137    BS          .               .             -3.80000         3.80000             NaN    359
+     138  x    138    FR          .               .             -3.80000         3.80000             NaN    360
+     139  x    139    BS          .               .             -3.80000         3.80000             NaN    361
+     140  x    140    BS          .               .             -3.80000         3.80000             NaN    362
+     141  x    141    BS          .               .             -3.80000         3.80000             NaN    363
+     142  x    142    BS          .               .             -3.80000         3.80000             NaN    364
+     143  x    143    BS          .               .             -3.80000         3.80000             NaN    365
+     144  x    144    FR          .               .             -3.80000         3.80000             NaN    366
+     145  x    145    FR          .               .             -3.80000         3.80000             NaN    367
+     146  x    146    BS          .               .             -3.80000         3.80000             NaN    368
+     147  x    147    BS          .               .             -3.80000         3.80000             NaN    369
+     148  x    148    BS          .               .             -3.80000         3.80000             NaN    370
+     149  x    149    BS          .               .             -3.80000         3.80000             NaN    371
+     150  x    150    FR          .               .             -3.80000         3.80000             NaN    372
+     151  x    151    FR          .               .             -3.80000         3.80000             NaN    373
+     152  x    152    BS          .               .             -3.80000         3.80000             NaN    374
+     153  x    153    BS          .               .             -3.80000         3.80000             NaN    375
+     154  x    154    FR          .               .             -3.80000         3.80000             NaN    376
+     155  x    155    BS          .               .             -3.80000         3.80000             NaN    377
+     156  x    156    BS          .               .             -3.80000         3.80000             NaN    378
+     157  x    157    BS          .               .             -3.80000         3.80000             NaN    379
+     158  x    158    FR          .               .             -3.80000         3.80000             NaN    380
+     159  x    159    BS          .               .             -3.80000         3.80000             NaN    381
+     160  x    160    BS          .               .             -3.80000         3.80000             NaN    382
+     161  x    161    FR          .               .             -3.80000         3.80000             NaN    383
+     162  x    162    FR          .               .             -3.80000         3.80000             NaN    384
+     163  x    163    FR          .               .             -3.80000         3.80000             NaN    385
+     164  x    164    FR          .               .             -3.80000         3.80000             NaN    386
+     165  x    165    BS          .               .             -3.80000         3.80000             NaN    387
+     166  x    166    BS          .               .             -3.80000         3.80000             NaN    388
+     167  x    167    BS          .               .             -3.80000         3.80000             NaN    389
+     168  x    168    BS          .               .             -3.80000         3.80000             NaN    390
+     169  x    169    FR          .               .             -3.80000         3.80000             NaN    391
+     170  x    170    FR          .               .             -3.80000         3.80000             NaN    392
+     171  x    171    BS          .               .             -3.80000         3.80000             NaN    393
+     172  x    172    FR          .               .             -3.80000         3.80000             NaN    394
+     173  x    173    BS          .               .             -3.80000         3.80000             NaN    395
+     174  x    174    BS          .               .             -3.80000         3.80000             NaN    396
+     175  x    175    BS          .               .             -3.80000         3.80000             NaN    397
+     176  x    176    BS          .               .             -3.80000         3.80000             NaN    398
+     177  x    177    FR          .               .             -3.80000         3.80000             NaN    399
+     178  x    178    FR          .               .             -3.80000         3.80000             NaN    400
+     179  x    179    BS          .               .             -3.80000         3.80000             NaN    401
+     180  x    180    FR          .               .             -3.80000         3.80000             NaN    402
+     181  x    181    BS          .               .             -3.80000         3.80000             NaN    403
+     182  x    182    BS          .               .             -3.80000         3.80000             NaN    404
+     183  x    183    BS          .               .             -3.80000         3.80000             NaN    405
+     184  x    184    BS          .               .             -3.80000         3.80000             NaN    406
+     185  x    185    BS          .               .             -3.80000         3.80000             NaN    407
+     186  x    186    FR          .               .             -3.80000         3.80000             NaN    408
+     187  x    187    FR          .               .             -3.80000         3.80000             NaN    409
+     188  x    188    BS          .               .             -3.80000         3.80000             NaN    410
+     189  x    189    FR          .               .             -3.80000         3.80000             NaN    411
+     190  x    190    BS          .               .             -3.80000         3.80000             NaN    412
+     191  x    191    BS          .               .             -3.80000         3.80000             NaN    413
+     192  x    192    FR          .               .             -3.80000         3.80000             NaN    414
+     193  x    193    FR          .               .             -0.20000         2.00000             NaN    415
+     194  x    194    FR          .               .             -0.20000         2.00000             NaN    416
+     195  x    195    BS          .               .             -0.20000         2.00000             NaN    417
+     196  x    196    BS          .               .             -0.20000         2.00000             NaN    418
+     197  x    197    BS          .               .             -0.20000         2.00000             NaN    419
+     198  x    198    FR          .               .             -0.20000         2.00000             NaN    420
+     199  x    199    BS          .               .             -0.20000         2.00000             NaN    421
+     200  x    200    BS          .               .             -0.20000         2.00000             NaN    422
+     201  x    201    BS          .               .             -0.20000         2.00000             NaN    423
+     202  x    202    FR          .               .             -0.20000         2.00000             NaN    424
+     203  x    203    BS          .               .             -0.20000         2.00000             NaN    425
+     204  x    204    BS          .               .             -0.20000         2.00000             NaN    426
+     205  x    205    BS          .               .             -0.20000         2.00000             NaN    427
+     206  x    206    BS          .               .             -0.20000         2.00000             NaN    428
+     207  x    207    BS          .               .             -0.20000         2.00000             NaN    429
+     208  x    208    FR          .               .             -0.20000         2.00000             NaN    430
+     209  x    209    FR          .               .             -0.20000         2.00000             NaN    431
+     210  x    210    BS          .               .             -0.20000         2.00000             NaN    432
+     211  x    211    FR          .               .             -0.20000         2.00000             NaN    433
+     212  x    212    BS          .               .             -0.20000         2.00000             NaN    434
+     213  x    213    BS          .               .             -0.20000         2.00000             NaN    435
+     214  x    214    BS          .               .             -0.20000         2.00000             NaN    436
+     215  x    215    BS          .               .             -0.20000         2.00000             NaN    437
+     216  x    216    BS          .               .             -0.20000         2.00000             NaN    438
+     217  x    217    BS          .               .             -0.20000         2.00000             NaN    439
+     218  x    218    FR          .               .             -0.20000         2.00000             NaN    440
+     219  x    219    FR          .               .             -0.20000         2.00000             NaN    441
+     220  x    220    BS          .               .             -0.20000         2.00000             NaN    442
+     221  x    221    BS          .               .             -0.20000         2.00000             NaN    443
+     222  x    222    BS          .               .             -0.20000         2.00000             NaN    444
+     223  x    223    BS          .               .             -0.20000         2.00000             NaN    445
+
+ Time for MPS input                             0.00 seconds
+ Time for solving problem                       0.75 seconds
+ Time for solution output                       0.00 seconds
+ Time for constraint functions                  0.75 seconds
+ Time for objective function                    0.00 seconds
